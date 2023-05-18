@@ -5,26 +5,18 @@ Created on Thu May 18 20:48:23 2023
 
 @author: temuuleu
 """
-
-
-
 from libarary.library import *
-
 from config.config import Config
-
 
 def main():
     
     cfg = Config()
-
     print(cfg.output_dir)
         
-    
     output_dir = cfg.output_dir
     temp_dir  = os.path.join(output_dir, "temp_Papers")
     os.makedirs(output_dir, exist_ok=True)
 
-    
     categorie_output_dir   = os.path.join(output_dir, "Output_Papers")
 
     papers_list_path   = f"{categorie_output_dir}/papers_list.xlsx"
@@ -45,9 +37,6 @@ def main():
     all_paper_result.drop_duplicates(inplace=True)
     all_paper_result.to_excel(papers_list_path)
     
-    
-    
-
     model = SentenceTransformer('bert-base-nli-mean-tokens')
     connections.connect(host='127.0.0.1', port='19530')
 
@@ -92,13 +81,16 @@ def main():
       _async=True
     )
     print(collection.schema)
-    temp_data = all_paper_result.loc[:10,:]
+    
+    temp_data = all_paper_result.loc[:,:]
     pd_created_with_embeddings = transform_data(temp_data, model)
 
     data = parallel_preparation(pd_created_with_embeddings)
     mr = collection.insert(data)
     
     """
+    
+    TODO_SEARCH THE DATABASE
     results = collection.search(
         data=[[,]], 
         anns_field=collection_name, 
