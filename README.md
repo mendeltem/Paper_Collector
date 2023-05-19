@@ -25,12 +25,11 @@ git clone https://github.com/monk1337/resp
 cd resp 
 pip install -r requirements.txt && pip install -e .
 ```
-1. Install Paper Collector
+2. Install Paper Collector
 
 
 Clone this repository to your local machine.
 Ensure you have all the necessary dependencies installed.
-
 
 
 ```shell
@@ -41,6 +40,8 @@ pip install -r requirements.txt
 ```
 Set up to .bashrc
 '''
+
+3. Change .env File to your directory
 
 
 
