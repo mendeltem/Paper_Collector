@@ -30,6 +30,9 @@ pip install -r requirements.txt && pip install -e .
 ```
 Clone this repository to your local machine.
 Ensure you have all the necessary dependencies installed.
+
+
+
 ```bash
 
 git clone https://github.com/mendeltem/Paper_Collector.git
@@ -54,13 +57,13 @@ Step 1 — Installing Docker Compose
 sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 docker-compose --version
+'''
+
 
 Step 2 — Installing Milvus Server
 
-'''
 ```bash
 wget https://github.com/milvus-io/milvus/releases/download/v2.0.2/milvus-standalone-docker-compose.yml -O docker-compose.yml
-
 
 sudo docker-compose up -d
 sudo docker-compose ps
