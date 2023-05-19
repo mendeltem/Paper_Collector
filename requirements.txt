@@ -1,2 +1,7 @@
 pymilvus
 sentence_transformers
+pandas
+xlrd
+dotenv
+colorama
+abc
