@@ -33,7 +33,7 @@ Ensure you have all the necessary dependencies installed.
 
 
 
-```bash
+```shell
 
 git clone https://github.com/mendeltem/Paper_Collector.git
 cd Paper_Collector
