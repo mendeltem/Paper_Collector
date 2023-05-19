@@ -53,11 +53,11 @@ https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-c
 Step 1 — Installing Docker Compose
 
 
-```bash
+```shell
 sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 docker-compose --version
-'''
+```
 
 
 Step 2 — Installing Milvus Server
@@ -71,7 +71,7 @@ sudo docker-compose ps
 # stop milvus
 sudo docker-compose down
 
-'''
+```
 
 #Tutorial for milvus (Vector Database)
 
