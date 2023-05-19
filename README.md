@@ -73,6 +73,10 @@ sudo docker-compose down
 
 '''
 
+#Tutorial for milvus (Vector Database)
+
+https://milvus.io/docs/v2.0.x/install_standalone-docker.md
+
 
 Usage
 The project will iterate through all combinations of the keywords defined in the single_word_key_list variable, fetching articles from arXiv for each combination.
