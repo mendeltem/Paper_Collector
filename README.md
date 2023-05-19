@@ -24,10 +24,10 @@ First install resp
 git clone https://github.com/monk1337/resp
 cd resp 
 pip install -r requirements.txt && pip install -e .
-
+```
 1. Install Paper Collector
 
-```
+
 Clone this repository to your local machine.
 Ensure you have all the necessary dependencies installed.
 
@@ -58,7 +58,7 @@ sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-
 sudo chmod +x /usr/local/bin/docker-compose
 docker-compose --version
 '''
-'''
+
 
 Step 2 — Installing Milvus Server
 
@@ -68,7 +68,7 @@ wget https://github.com/milvus-io/milvus/releases/download/v2.0.2/milvus-standal
 sudo docker-compose up -d
 sudo docker-compose ps
 
-#stop milvus
+# stop milvus
 sudo docker-compose down
 
 '''
