@@ -5,3 +5,14 @@ xlrd
 dotenv
 colorama
 abc
+concurrent.futures
+pandas
+sentence-transformers
+pymilvus
+arxiv
+requests
+PyPDF2
+slate3k
+PyMuPDF  # this is the official name for the "fitz" module
+annoy
+seaborn

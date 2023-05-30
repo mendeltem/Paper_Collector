@@ -7,29 +7,17 @@ Created on Thu May 18 20:49:58 2023
 """
 
 import os
-import subprocess
 import concurrent.futures
 import pandas as pd
 import time
-import numpy as np
+
+
+from concurrent.futures import ProcessPoolExecutor
 from sentence_transformers.util import cos_sim
-import matplotlib.pyplot as plt
-import seaborn as sns
 from sentence_transformers import SentenceTransformer
-import scipy.stats as stats
-import statsmodels.api as sm
-import statsmodels.formula.api as smf
-from scipy.stats import friedmanchisquare, wilcoxon
-import requests
-import itertools
 from itertools import combinations
-from tqdm import tqdm
 from pymilvus import connections, FieldSchema, CollectionSchema, DataType, Collection, utility
 import arxiv
-
-import os
-from itertools import combinations
-import pandas as pd
 from resp.apis.arxiv_api import Arxiv
 
 def timer(f):
@@ -57,6 +45,7 @@ def get_files_from_dir(path):
 
 
 def concat_excel(df_result_volumes_file_list):
+    
     with concurrent.futures.ProcessPoolExecutor() as executor:
         dfs = list(executor.map(read_excel, df_result_volumes_file_list))
     return pd.concat(dfs, ignore_index=True)
@@ -85,8 +74,30 @@ def store_paper_data(paper_id: int, paper: arxiv.Result, model) -> dict:
     return {
         "id": paper_id,
         "summary_embeddings": summary_embeddings,
+        "summary":paper.summary
     }
 
+
+@timer
+def create_dictionary(all_paper_result, model):
+    dictionary_with_embeddings = {}
+
+    for ri, row in enumerate(all_paper_result.values):
+        title, url = row[0], row[1]
+        paper_id = extract_paper_id(url)
+        paper = fetch_paper_data(paper_id)
+        
+        summary_embeddings = encode_summary(model, paper.summary)
+
+        dictionary_with_embeddings[ri] = {}
+        dictionary_with_embeddings[ri]["title"] = paper.title
+        dictionary_with_embeddings[ri]["summary_embeddings"] = summary_embeddings
+        dictionary_with_embeddings[ri]["paper"] = paper
+        dictionary_with_embeddings[ri]["summary"] = paper.summary
+        
+
+    return dictionary_with_embeddings
+    
 
 @timer
 def transform_data(all_paper_result, model):
@@ -104,25 +115,35 @@ def transform_data(all_paper_result, model):
 def prepare_data(item):
     key, value = item
     vector = value["summary_embeddings"]
-    return key, vector
+    summary = value["summary"]
+    
+    return key, vector,summary
 
 
 @timer
 def parallel_preparation(pd_created_with_embeddings):
     ids_list = []
     v_list = []
+    s_list = []
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        for key, vector in executor.map(prepare_data, pd_created_with_embeddings.items()):
+        for key, vector,summary in executor.map(prepare_data, pd_created_with_embeddings.items()):
             ids_list.append(key)
             v_list.append(vector)
+            s_list.append(summary)
     
-    return [ids_list, v_list]
+    return [ids_list, v_list,s_list]
 
 
-
-
-
+def prepare_data_all(item):
+    key, value  = item
+    vector      = value["summary_embeddings"]
+    
+    title       = value["title"]
+    summary     = value["summary"]
+    paper       = value["paper"]
+    
+    return key, vector,title,summary,paper
 
 def create_search_phrases(single_word_key_list):
     combinations_list = []
@@ -131,6 +152,61 @@ def create_search_phrases(single_word_key_list):
     phrase_list = [' '.join(phrase) for phrase in combinations_list]
     return phrase_list
 
+
+def process_paper(row):
+    start_time = time.time()
+    row_df = pd.DataFrame()
+    title, url = row[0], row[1]
+    paper_id = extract_paper_id(url)
+    paper    = fetch_paper_data(paper_id)
+    
+    row_df["title"]  =   paper.title
+    row_df["summary"]  =   paper.summary
+    row_df["published"]  = paper.published.date()
+    row_df["primary_category"]  =   paper.primary_category
+    row_df["Author"]  =   ";".join(str(paper.authors[author]) for author in range(len(paper.authors)))  
+    row_df["pdf_url"]  =   paper.pdf_url
+    row_df["links"]  =   ";".join(str(paper.links[author]) for author in range(len(paper.links)))  
+    row_df["paper_id"]  = paper_id
+    
+    end_time = time.time()
+    print(f"Time taken for process_paper: {end_time - start_time} seconds")
+    
+    return row_df
+
+
+
+def search_and_save(search_phrases, output_dir, max_pages=1, max_dev_temp=2, ci= 0):
+    all_result = pd.DataFrame()
+    
+    for ci, phrase in enumerate(search_phrases):
+        
+        if ci:
+            if ci >1:
+                break
+        
+        ap = Arxiv()
+        arxiv_result = ap.arxiv(phrase, max_pages=max_pages)
+        
+        all_result = pd.concat([all_result, arxiv_result])
+        
+        
+        
+        
+        
+        
+    # paper_information_df = pd.DataFrame()
+    
+    # for row in all_result.values:
+    #     print(f"row {row}")
+        
+    #     try:
+    #         paper_information_df = pd.concat([paper_information_df, process_paper(row)])
+    #     except:
+    #         print("failed")
+    
+    
+    #return paper_information_df
 
 def search_and_save(search_phrases, output_dir, max_pages=100, max_dev_temp=1000, ci= 0):
     all_result = pd.DataFrame()
@@ -151,10 +227,54 @@ def search_and_save(search_phrases, output_dir, max_pages=100, max_dev_temp=1000
 
     if all_result.shape[0] > 0:
         save_to_excel(all_result, output_dir, len(search_phrases), max_dev_temp)
+        
+        
+
+# def search_and_save(search_phrases, output_dir, max_pages=100, max_dev_temp=1000, ci= 0):
+#     all_result = pd.DataFrame()
+    
+#     paper_information_df = pd.DataFrame()
+
+#     for ci, phrase in enumerate(search_phrases):
+        
+#         if ci:
+#             if ci >1:
+#                 break
+        
+#         ap = Arxiv()
+#         arxiv_result = ap.arxiv(phrase, max_pages=max_pages)
+        
+#         for ri, row in enumerate(arxiv_result.values):
+            
+#             print(f"index {ri}")
+            
+#             row_df = pd.DataFrame(index=(ri,))
+#             title, url = row[0], row[1]
+#             paper_id = extract_paper_id(url)
+#             paper    = fetch_paper_data(paper_id)
+            
+#             row_df["title"]  =   paper.title
+#             row_df["summary"]  =   paper.summary
+#             row_df["published"]  = paper.published.date()
+#             row_df["primary_category"]  =   paper.primary_category
+#             row_df["Author"]  =   ";".join(str(paper.authors[author]) for author in range(len(paper.authors)))  
+#             row_df["pdf_url"]  =   paper.pdf_url
+#             row_df["links"]  =   ";".join(str(paper.links[author]) for author in range(len(paper.links)))  
+#             row_df["paper_id"]  = paper_id
+            
+#             print(f"title {paper.title}")
+#             paper_information_df = pd.concat([paper_information_df, row_df])
+            
+#     return paper_information_df
+
+        
+
 
 
 def save_to_excel(data_frame, output_dir, ci, max_dev_temp):
+    
     data_part = os.path.join(output_dir, f"papers_{ci+1}_{data_frame.shape[0] // max_dev_temp}.xlsx")
+    print(f"data_part {data_part}")
     data_frame.to_excel(data_part)
 
 
