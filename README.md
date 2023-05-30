@@ -13,19 +13,26 @@ resp
 os
 To install the dependencies, run:
 
+
+# For the essentials:
+
 First install resp
+
+1. Install the  arxiv
 
 ```shell
 git clone https://github.com/monk1337/resp
 cd resp 
 pip install -r requirements.txt && pip install -e .
 ```
-
+2. Install Paper Collector
 
 
 Clone this repository to your local machine.
 Ensure you have all the necessary dependencies installed.
-```bash
+
+
+```shell
 
 git clone https://github.com/mendeltem/Paper_Collector.git
 cd Paper_Collector
@@ -34,36 +41,42 @@ pip install -r requirements.txt
 Set up to .bashrc
 '''
 
+3. Change .env File to your directory
+
+
+
+# For Running Milvus:
 
 Install Milvus Server:
 
 https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-compose-on-ubuntu-20-04
 
-
-
 Step 1 — Installing Docker Compose
 
 
-```bash
+```shell
 sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 docker-compose --version
+```
 
 
-'''
 Step 2 — Installing Milvus Server
 
 ```bash
 wget https://github.com/milvus-io/milvus/releases/download/v2.0.2/milvus-standalone-docker-compose.yml -O docker-compose.yml
 
-
 sudo docker-compose up -d
 sudo docker-compose ps
 
-#stop milvus
+# stop milvus
 sudo docker-compose down
 
-'''
+```
+
+#Tutorial for milvus (Vector Database)
+
+https://milvus.io/docs/v2.0.x/install_standalone-docker.md
 
 
 Usage
